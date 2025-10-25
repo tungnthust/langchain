@@ -4,10 +4,10 @@ import csv
 import json
 import os
 from pathlib import Path
-from typing import List, Tuple
+from typing import List
 
-from rag_pipeline.config import PipelineConfig, create_custom_config
-from rag_pipeline.pipeline import DocumentQAPipeline
+from .config import create_custom_config
+from .pipeline import DocumentQAPipeline
 
 
 def load_questions(csv_path: str) -> List[dict]:

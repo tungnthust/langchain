@@ -41,13 +41,103 @@ Question → Query Preprocessing → Hybrid Search → Re-ranking → Context Fe
 
 ## Installation
 
+### Option 1: Install from source
+
 ```bash
-# Install dependencies
-cd rag_pipeline
+# Navigate to the rag_pipeline directory
+cd libs/rag_pipeline
+
+# Install with uv (recommended)
+uv pip install -e .
+
+# Or with pip
+pip install -e .
+```
+
+### Option 2: Install dependencies only
+
+```bash
+cd libs/rag_pipeline
 pip install -r requirements.txt
 
 # For GPU support (CUDA 11.8 example)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+## Quick Start
+
+### Running the Question Processor
+
+The easiest way to use the pipeline is with the standalone script:
+
+```bash
+cd libs/rag_pipeline
+
+# Make sure your markdown files are in the correct directory
+# Update document_storage_dir in run_qa_pipeline.py if needed
+
+# Run with questions.csv in the current directory
+python run_qa_pipeline.py
+
+# Or specify a different CSV file
+python run_qa_pipeline.py path/to/your/questions.csv
+```
+
+### Using as a Python Package
+
+```python
+import sys
+sys.path.insert(0, 'libs/rag_pipeline')
+
+from config import create_custom_config
+from pipeline import DocumentQAPipeline
+
+# Create configuration
+config = create_custom_config(
+    llm_model_name="Qwen/Qwen2.5-3B-Instruct",
+    embedding_model_name="BAAI/bge-m3",
+    reranker_model_name="cross-encoder/ms-marco-MiniLM-L-6-v2",
+    document_storage_dir="/path/to/your/markdown/files",
+)
+
+# Initialize pipeline
+pipeline = DocumentQAPipeline(config)
+
+# Load or ingest documents
+pipeline.load_or_ingest()
+
+# Ask questions
+result = pipeline.ask("What is the function of a resistor?")
+
+print(result["answer"])
+for citation in result["citations"]:
+    print(f"- {citation['document_name']}: {citation['section_header']}")
+```
+
+## Question CSV Format
+
+The input CSV file should have the following format:
+
+```csv
+Question,A,B,C,D
+"What component limits current in a circuit?","Resistor","Capacitor","Transistor","Diode"
+"What can you insert in PowerPoint?","Only text","Only images","Text and images","Text, images, audio, video, backgrounds, effects"
+```
+
+## Output Format
+
+The pipeline generates an `answers.txt` file with the following format:
+
+```
+1,A
+2,D
+3,B
+```
+
+For questions with multiple correct answers:
+
+```
+1,"A,B"
 ```
 
 ## Usage
@@ -55,8 +145,7 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 ### Basic Usage
 
 ```python
-from rag_pipeline.pipeline import DocumentQAPipeline
-from rag_pipeline.config import create_custom_config
+from langchain_rag_pipeline import DocumentQAPipeline, create_custom_config
 
 # Create configuration
 config = create_custom_config(
@@ -83,7 +172,7 @@ for citation in result["citations"]:
 ### Custom Model Configuration
 
 ```python
-from rag_pipeline.config import create_custom_config
+from langchain_rag_pipeline import create_custom_config
 
 # Use different models
 config = create_custom_config(
@@ -94,13 +183,6 @@ config = create_custom_config(
     vector_store_path="./my_vector_store",
     document_store_path="./my_document_store",
 )
-```
-
-### Running the Test Script
-
-```python
-# Process questions from CSV
-python -m rag_pipeline.test_pipeline
 ```
 
 ## Configuration Options
@@ -151,7 +233,7 @@ Main orchestrator that ties all components together.
 ## File Structure
 
 ```
-rag_pipeline/
+libs/rag_pipeline/
 ├── __init__.py
 ├── config.py                 # Configuration management
 ├── document_processor.py     # Markdown parsing and chunking
@@ -161,8 +243,12 @@ rag_pipeline/
 ├── query_processor.py        # Query preprocessing
 ├── qa_engine.py              # Answer generation
 ├── pipeline.py               # Main pipeline orchestrator
-├── test_pipeline.py          # Test script for CSV questions
+├── run_qa_pipeline.py        # Standalone script for CSV questions
+├── run_questions.py          # Module version of question processor
+├── example.py                # Example usage
+├── tests/                    # Unit tests
 ├── requirements.txt          # Dependencies
+├── pyproject.toml            # Package configuration
 └── README.md                 # This file
 ```
 
@@ -173,6 +259,11 @@ All models are open-source from HuggingFace:
 - **LLM**: Qwen/Qwen2.5-3B-Instruct (recommended, easily swappable)
 - **Embeddings**: BAAI/bge-m3 (multilingual support)
 - **Re-ranker**: cross-encoder/ms-marco-MiniLM-L-6-v2 (efficient and accurate)
+
+You can easily switch to other models:
+- LLM: Any instruction-tuned model (Llama, Mistral, Phi, etc.)
+- Embeddings: bge-large, e5-large, multilingual-e5, etc.
+- Re-ranker: bge-reranker-large, colbert-v2, etc.
 
 ## Performance Tips
 
@@ -197,6 +288,14 @@ All models are open-source from HuggingFace:
 - Increase `hybrid_search_top_k` and `reranker_top_k`
 - Adjust chunk sizes
 - Try different embedding models
+
+## Example Workflow
+
+1. **Prepare your documents**: Place all markdown files in a directory
+2. **Create questions.csv**: Format your questions as shown above
+3. **Update configuration**: Edit `run_qa_pipeline.py` to point to your document directory
+4. **Run the pipeline**: `python run_qa_pipeline.py`
+5. **Check results**: Review `answers.txt` for the answers
 
 ## License
 

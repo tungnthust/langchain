@@ -2,7 +2,8 @@
 
 import os
 
-from rag_pipeline import DocumentQAPipeline, create_custom_config
+from .config import create_custom_config
+from .pipeline import DocumentQAPipeline
 
 
 def main():
