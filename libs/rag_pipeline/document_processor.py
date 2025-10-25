@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 
 @dataclass
 class Chunk:
@@ -27,6 +25,84 @@ class Document:
     parent_chunks: List[Chunk]
     child_chunks: List[Chunk]
     metadata: Dict[str, str]
+
+
+class SimpleTextSplitter:
+    """Simple text splitter for chunking text."""
+
+    def __init__(
+        self,
+        chunk_size: int = 1000,
+        chunk_overlap: int = 200,
+        separators: Optional[List[str]] = None,
+    ):
+        """
+        Initialize text splitter.
+
+        Args:
+            chunk_size: Maximum size of each chunk.
+            chunk_overlap: Number of characters to overlap between chunks.
+            separators: List of separators to split on, in order of priority.
+        """
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.separators = separators or ["\n\n", "\n", ". ", " ", ""]
+
+    def split_text(self, text: str) -> List[str]:
+        """
+        Split text into chunks.
+
+        Args:
+            text: Text to split.
+
+        Returns:
+            List of text chunks.
+        """
+        if not text:
+            return []
+
+        # If text is shorter than chunk size, return as is
+        if len(text) <= self.chunk_size:
+            return [text]
+
+        chunks = []
+        start = 0
+
+        while start < len(text):
+            # Determine end position
+            end = start + self.chunk_size
+
+            # If this is not the last chunk, try to split at a separator
+            if end < len(text):
+                # Try each separator in order
+                best_split = end
+                for separator in self.separators:
+                    if not separator:
+                        continue
+
+                    # Look for separator near the end position
+                    search_start = max(start, end - len(separator) - 100)
+                    search_end = min(len(text), end + 100)
+                    search_text = text[search_start:search_end]
+
+                    split_pos = search_text.rfind(separator)
+                    if split_pos != -1:
+                        best_split = search_start + split_pos + len(separator)
+                        break
+
+                end = best_split
+
+            # Extract chunk
+            chunk = text[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+
+            # Move start position with overlap
+            start = end - self.chunk_overlap
+            if start <= 0 or start >= len(text):
+                break
+
+        return chunks
 
 
 class MarkdownParser:
@@ -114,16 +190,16 @@ class DocumentProcessor:
 
         self.parser = MarkdownParser()
 
-        self.parent_splitter = RecursiveCharacterTextSplitter(
+        self.parent_splitter = SimpleTextSplitter(
             chunk_size=parent_chunk_size,
             chunk_overlap=parent_chunk_overlap,
-            separators=["\n## ", "\n### ", "\n#### ", "\n\n", "\n", " ", ""],
+            separators=["\n## ", "\n### ", "\n#### ", "\n\n", "\n", " "],
         )
 
-        self.child_splitter = RecursiveCharacterTextSplitter(
+        self.child_splitter = SimpleTextSplitter(
             chunk_size=child_chunk_size,
             chunk_overlap=child_chunk_overlap,
-            separators=["\n\n", "\n", ". ", " ", ""],
+            separators=["\n\n", "\n", ". ", " "],
         )
 
     def process_document(self, file_path: str) -> Document:

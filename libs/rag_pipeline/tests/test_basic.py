@@ -11,7 +11,11 @@ class TestDocumentProcessor:
 
     def test_chunk_creation(self):
         """Test that chunks can be created."""
-        from langchain_rag_pipeline.document_processor import Chunk
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+        from document_processor import Chunk
 
         chunk = Chunk(
             content="Test content",
@@ -30,7 +34,11 @@ class TestConfig:
 
     def test_default_config(self):
         """Test default configuration."""
-        from langchain_rag_pipeline.config import get_default_config
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+        from config import get_default_config
 
         config = get_default_config()
         assert config is not None
@@ -39,7 +47,11 @@ class TestConfig:
 
     def test_custom_config(self):
         """Test custom configuration."""
-        from langchain_rag_pipeline.config import create_custom_config
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+        from config import create_custom_config
 
         config = create_custom_config(
             llm_model_name="custom/model",
@@ -55,7 +67,11 @@ class TestMarkdownParser:
 
     def test_parse_simple_markdown(self):
         """Test parsing simple markdown."""
-        from langchain_rag_pipeline.document_processor import MarkdownParser
+        import sys
+
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+
+        from document_processor import MarkdownParser
 
         parser = MarkdownParser()
         content = """# Header 1
