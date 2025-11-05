@@ -1,0 +1,11 @@
+# Core dependencies for RAG pipeline
+transformers>=4.35.0
+torch>=2.0.0
+sentence-transformers>=2.2.0
+langchain-text-splitters>=0.0.1
+numpy>=1.24.0
+tqdm>=4.65.0
+
+# Optional: for GPU support
+# torch with CUDA support should be installed separately based on your CUDA version
+# Example: pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "langchain-rag-pipeline"
+version = "0.1.0"
+description = "Advanced RAG pipeline for document Q&A"
+readme = "README.md"
+requires-python = ">=3.10.0,<4.0.0"
+license = { text = "MIT" }
+authors = []
+
+dependencies = [
+    "transformers>=4.35.0",
+    "torch>=2.0.0",
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.24.0",
+    "tqdm>=4.65.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/langchain-ai/langchain"
+Source = "https://github.com/langchain-ai/langchain/tree/master/libs/rag_pipeline"
+
+[dependency-groups]
+dev = [
+    "jupyter>=1.0.0,<2.0.0",
+]
+test = [
+    "pytest>=8.0.0,<9.0.0",
+    "pytest-asyncio>=0.21.1,<1.0.0",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
